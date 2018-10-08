@@ -36,6 +36,104 @@ func (cube *Cube) Print() {
     }
 }
 
+//          2 3 4
+//          1 G 5
+//          0 7 6
+
+// 0 1 2    2 3 4    4 5 6
+// 7 O 3    1 Y 5    3 R 7
+// 6 5 4    0 7 6    2 1 0
+
+//          2 3 4
+//          1 B 5
+//          0 7 6
+
+//          2 3 4
+//          1 W 5
+//          0 7 6
+
+// 0 -> 2{4,3,2}, 4{4,3,2}, 3{0,7,6}, 5{4,3,2}
+// 1 -> 2{0,7,6}, 5{0,7,6}, 3{4,3,2}, 4{0,7,6}
+// 2 -> 0{0,7,6}, 5{2,1,0}, 1{6,7,0}, 4{6,5,4}
+// 3 -> 0{4,3,2}, 4{2,1,0}, 1{0,7,6}, 5{6,5,4}
+// 4 -> 0{2,1,0}, 2{2,1,0}, 1{2,1,0}, 3{2,1,0}
+// 5 -> 0{6,5,4}, 3{6,5,4}, 1{6,5,4}, 2{6,5,4}
+
+// side:
+// 顺: 0123 <- 3012  (x+3)%4
+// 逆: 0123 <- 1230  (x+1)%4
+
+// top:
+// 顺: 01234567 <- 67012345  (x+6)%8
+// 逆: 01234567 <- 23456701  (x+2)%8
+
+type RotateRule struct {
+    faceIdx int
+    gridIdx []int
+}
+
+var RotateRules [][]RotateRule = [][]RotateRule{
+    []RotateRule{
+        RotateRule{2, []int{4,3,2}},
+        RotateRule{4, []int{4,3,2}},
+        RotateRule{3, []int{0,7,6}},
+        RotateRule{5, []int{4,3,2}},
+    },
+    []RotateRule{
+        RotateRule{2, []int{0,7,6}},
+        RotateRule{5, []int{0,7,6}},
+        RotateRule{3, []int{4,3,2}},
+        RotateRule{4, []int{0,7,6}},
+    },
+    []RotateRule{
+        RotateRule{0, []int{0,7,6}},
+        RotateRule{5, []int{2,1,0}},
+        RotateRule{1, []int{6,7,0}},
+        RotateRule{4, []int{6,5,4}},
+    },
+    []RotateRule{
+        RotateRule{0, []int{4,3,2}},
+        RotateRule{4, []int{2,1,0}},
+        RotateRule{1, []int{0,7,6}},
+        RotateRule{5, []int{6,5,4}},
+    },
+    []RotateRule{
+        RotateRule{0, []int{2,1,0}},
+        RotateRule{2, []int{2,1,0}},
+        RotateRule{1, []int{2,1,0}},
+        RotateRule{3, []int{2,1,0}},
+    },
+    []RotateRule{
+        RotateRule{0, []int{6,5,4}},
+        RotateRule{3, []int{6,5,4}},
+        RotateRule{1, []int{6,5,4}},
+        RotateRule{2, []int{6,5,4}},
+    },
+}
+
+func (cube *Cube) Rotate(f int, clockWise bool) {
+    rules := RotateRules[f]
+    sideMove, topMove := 3, 6
+    if !clockWise {
+        sideMove, topMove = 1, 2
+    }
+    for i:=0; i<3; i++ {
+        cube.face[rules[0].faceIdx][rules[0].gridIdx[i]],
+        cube.face[rules[1].faceIdx][rules[1].gridIdx[i]],
+        cube.face[rules[2].faceIdx][rules[2].gridIdx[i]],
+        cube.face[rules[3].faceIdx][rules[3].gridIdx[i]] =
+            cube.face[rules[(0+sideMove)%4].faceIdx][rules[(0+sideMove)%4].gridIdx[i]],
+        cube.face[rules[(1+sideMove)%4].faceIdx][rules[(1+sideMove)%4].gridIdx[i]],
+        cube.face[rules[(2+sideMove)%4].faceIdx][rules[(2+sideMove)%4].gridIdx[i]],
+        cube.face[rules[(3+sideMove)%4].faceIdx][rules[(3+sideMove)%4].gridIdx[i]]
+    }
+    
+    cFace := cube.face[f]
+    cFace[0], cFace[1], cFace[2], cFace[3], cFace[4], cFace[5], cFace[6], cFace[7] =
+        cFace[(0+topMove)%8],cFace[(1+topMove)%8],cFace[(2+topMove)%8],cFace[(3+topMove)%8],cFace[(4+topMove)%8],cFace[(5+topMove)%8],cFace[(6+topMove)%8],cFace[(7+topMove)%8]
+}
+
+
 type Actions struct {
     face int
     orien bool
@@ -72,120 +170,3 @@ func main() {
     }
     cube.Print()
 }
-
-
-type TurnRule struct {
-    chains [][]TurnChain
-}
-
-type TurnChain struct {
-    faceIndex int
-    handleIndex []int
-}
-
-//          3 4 5
-//          2 G 6
-//          1 8 7
-
-// 1 2 3    3 4 5    5 6 7
-// 8 O 4    2 Y 6    4 R 8
-// 7 6 5    1 8 7    3 2 1
-
-//          3 4 5
-//          2 B 6
-//          1 8 7
-
-//          3 4 5
-//          2 W 6
-//          1 8 7
-
-// 0 -> 2{5,4,3}, 4{5,4,3}, 3{1,8,7}, 5{5,4,3}
-// 1 -> 2{1,8,7}, 5{1,8,7}, 3{5,4,3}, 4{1,8,7}
-// 2 -> 0{1,8,7}, 5{3,2,1}, 1{7,8,1}, 4{7,6,5}
-// 3 -> 0{5,4,3}, 4{3,2,1}, 1{1,8,7}, 5{7,6,5}
-// 4 -> 0{3,2,1}, 2{3,2,1}, 1{3,2,1}, 3{3,2,1}
-// 5 -> 0{7,6,5}, 3{7,6,5}, 1{7,6,5}, 2{7,6,5}
-
-var Rule *TurnRule = &TurnRule{
-    chains : [][]TurnChain{
-        []TurnChain{
-            TurnChain{2, []int{5,4,3}},
-            TurnChain{4, []int{5,4,3}},
-            TurnChain{3, []int{1,8,7}},
-            TurnChain{5, []int{5,4,3}},
-        },
-        []TurnChain{
-            TurnChain{2, []int{1,8,7}},
-            TurnChain{5, []int{1,8,7}},
-            TurnChain{3, []int{5,4,3}},
-            TurnChain{4, []int{1,8,7}},
-        },
-        []TurnChain{
-            TurnChain{0, []int{1,8,7}},
-            TurnChain{5, []int{3,2,1}},
-            TurnChain{1, []int{7,8,1}},
-            TurnChain{4, []int{7,6,5}},
-        },
-        []TurnChain{
-            TurnChain{0, []int{5,4,3}},
-            TurnChain{4, []int{3,2,1}},
-            TurnChain{1, []int{1,8,7}},
-            TurnChain{5, []int{7,6,5}},
-        },
-        []TurnChain{
-            TurnChain{0, []int{3,2,1}},
-            TurnChain{2, []int{3,2,1}},
-            TurnChain{1, []int{3,2,1}},
-            TurnChain{3, []int{3,2,1}},
-        },
-        []TurnChain{
-            TurnChain{0, []int{7,6,5}},
-            TurnChain{3, []int{7,6,5}},
-            TurnChain{1, []int{7,6,5}},
-            TurnChain{2, []int{7,6,5}},
-        },
-    },
-}
-
-// 顺: 0123 <- 3012, 012345678 <- 78123456
-// 逆: 0123 <- 1230, 012345678 <- 34567812
-
-type OrienIndex struct {
-    Top []int
-    Side []int
-}
-
-var ClockWise *OrienIndex = &OrienIndex{
-    Top : []int{7,8,1,2,3,4,5,6},
-    Side : []int{3,0,1,2},
-}
-var AntiClockWise *OrienIndex = &OrienIndex{
-    Top : []int{3,4,5,6,7,8,1,2},
-    Side : []int{1,2,3,0},
-}
-
-func (cube *Cube) Rotate(c int, clockWise bool) {
-    ruleChains := Rule.chains[c]
-    var orien *OrienIndex
-    if clockWise {
-        orien = ClockWise
-    } else {
-        orien = AntiClockWise
-    }
-
-    for i:=0; i<3; i++ {
-        cube.face[ruleChains[0].faceIndex][ruleChains[0].handleIndex[i]],
-        cube.face[ruleChains[1].faceIndex][ruleChains[1].handleIndex[i]],
-        cube.face[ruleChains[2].faceIndex][ruleChains[2].handleIndex[i]],
-        cube.face[ruleChains[3].faceIndex][ruleChains[3].handleIndex[i]] =
-            cube.face[ruleChains[orien.Side[0]].faceIndex][ruleChains[orien.Side[0]].handleIndex[i]],
-        cube.face[ruleChains[orien.Side[1]].faceIndex][ruleChains[orien.Side[1]].handleIndex[i]],
-        cube.face[ruleChains[orien.Side[2]].faceIndex][ruleChains[orien.Side[2]].handleIndex[i]],
-        cube.face[ruleChains[orien.Side[3]].faceIndex][ruleChains[orien.Side[3]].handleIndex[i]]
-    }
-
-    cFace := cube.face[c]
-    cFace[1], cFace[2], cFace[3], cFace[4], cFace[5], cFace[6], cFace[7], cFace[8] =
-    cFace[orien.Top[0]],cFace[orien.Top[1]],cFace[orien.Top[2]],cFace[orien.Top[3]],cFace[orien.Top[4]],cFace[orien.Top[5]],cFace[orien.Top[6]],cFace[orien.Top[7]]
-}
-
