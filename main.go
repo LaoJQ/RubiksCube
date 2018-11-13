@@ -36,37 +36,6 @@ func (cube *Cube) Print() {
     }
 }
 
-//          2 3 4
-//          1 G 5
-//          0 7 6
-
-// 0 1 2    2 3 4    4 5 6
-// 7 O 3    1 Y 5    3 R 7
-// 6 5 4    0 7 6    2 1 0
-
-//          2 3 4
-//          1 B 5
-//          0 7 6
-
-//          2 3 4
-//          1 W 5
-//          0 7 6
-
-// 0 -> 2{4,3,2}, 4{4,3,2}, 3{0,7,6}, 5{4,3,2}
-// 1 -> 2{0,7,6}, 5{0,7,6}, 3{4,3,2}, 4{0,7,6}
-// 2 -> 0{0,7,6}, 5{2,1,0}, 1{4,3,2}, 4{6,5,4}
-// 3 -> 0{4,3,2}, 4{2,1,0}, 1{0,7,6}, 5{6,5,4}
-// 4 -> 0{2,1,0}, 2{2,1,0}, 1{2,1,0}, 3{2,1,0}
-// 5 -> 0{6,5,4}, 3{6,5,4}, 1{6,5,4}, 2{6,5,4}
-
-// side:
-// 顺: 0123 <- 3012  (x+3)%4
-// 逆: 0123 <- 1230  (x+1)%4
-
-// top:
-// 顺: 01234567 <- 67012345  (x+6)%8
-// 逆: 01234567 <- 23456701  (x+2)%8
-
 type RotateRule struct {
     faceIdx int
     gridIdx []int
@@ -80,16 +49,16 @@ var RotateRules [][]RotateRule = [][]RotateRule{
         RotateRule{5, []int{4,3,2}},
     },
     []RotateRule{
+        RotateRule{4, []int{0,7,6}},
         RotateRule{2, []int{0,7,6}},
         RotateRule{5, []int{0,7,6}},
         RotateRule{3, []int{4,3,2}},
-        RotateRule{4, []int{0,7,6}},
     },
     []RotateRule{
+        RotateRule{4, []int{6,5,4}},
         RotateRule{0, []int{0,7,6}},
         RotateRule{5, []int{2,1,0}},
         RotateRule{1, []int{4,3,2}},
-        RotateRule{4, []int{6,5,4}},
     },
     []RotateRule{
         RotateRule{0, []int{4,3,2}},
@@ -104,10 +73,10 @@ var RotateRules [][]RotateRule = [][]RotateRule{
         RotateRule{3, []int{2,1,0}},
     },
     []RotateRule{
+        RotateRule{2, []int{6,5,4}},
         RotateRule{0, []int{6,5,4}},
         RotateRule{3, []int{6,5,4}},
         RotateRule{1, []int{6,5,4}},
-        RotateRule{2, []int{6,5,4}},
     },
 }
 
